@@ -10,6 +10,13 @@ class Fornecedor extends Model
     use HasFactory;
 
     /**
+     * O nome da tabela associada com o model.
+     *
+     * @var string
+     */
+    protected $table = 'fornecedores';
+    
+    /**
      * Define o relacionamento de que "Fornecedor possui muitos Produtos".
      */
     public function produtos()
