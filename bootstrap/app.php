@@ -43,6 +43,20 @@ $app->singleton(
 
 /*
 |--------------------------------------------------------------------------
+| Carregar Arquivo de Ambiente Personalizado para Desenvolvimento Local
+|--------------------------------------------------------------------------
+|
+| Aqui, verificamos se um arquivo .envh existe. Se existir, instruímos o
+| Laravel a usar esse arquivo em vez do .env padrão. Isso nos permite
+| ter configurações locais separadas que não são enviadas para produção.
+|
+*/
+if (file_exists(__DIR__.'/../.envh')) {
+    $app->loadEnvironmentFrom('.envh');
+}
+
+/*
+|--------------------------------------------------------------------------
 | Return The Application
 |--------------------------------------------------------------------------
 |
