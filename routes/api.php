@@ -15,11 +15,6 @@ use App\Http\Controllers\ProdutoController; // <-- IMPORTANTE: Importe o Control
 |
 */
 
-// Define uma rota do tipo GET para o endereço '/produtos'.
-// Quando essa rota for acessada, ela executará o método 'index'
-// da classe 'ProdutoController'.
-Route::get('/produtos', [ProdutoController::class, 'index']);
-
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });

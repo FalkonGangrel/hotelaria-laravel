@@ -1,5 +1,8 @@
 <?php
 
+// Linhas para importar controllers
+use App\Http\Controllers\ProdutoController;
+
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -16,3 +19,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+
+// Rota para o recurso 'produtos', mapeando para o ProdutoController
+Route::resource('produtos', ProdutoController::class);
