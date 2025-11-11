@@ -29,6 +29,7 @@
                     <th scope="col">Preço</th>
                     <th scope="col">Estoque</th>
                     <th scope="col">Fornecedor</th>
+                    <th scope="col">Status</th>
                     <th scope="col">Ações</th>
                 </tr>
             </thead>
@@ -44,14 +45,32 @@
                         {{-- Acessamos o nome do fornecedor através do relacionamento que definimos no Model! --}}
                         <td>{{ $produto->fornecedor->nome ?? 'N/A' }}</td>
                         <td>
-                            <!-- Futuramente, aqui teremos os botões de Editar e Excluir -->
-                            <a href="#" class="btn btn-sm btn-secondary">Editar</a>
+                            {{-- O método trashed() verifica se o produto foi "soft-deleted" --}}
+                            @if ($produto->trashed())
+                                <span class="badge bg-warning text-dark">Inativo</span>
+                            @else
+                                <span class="badge bg-success">Ativo</span>
+                            @endif
+                        </td>
+                        <td class="d-flex">
+                            @if ($produto->trashed())
+                                {{-- LÓGICA DE RESTAURAR (será implementada) --}}
+                                <button class="btn btn-sm btn-info">Restaurar</button>
+                            @else
+                                {{-- LÓGICA DE DELETAR (que já temos) --}}
+                                <a href="{{ route('produtos.edit', $produto) }}" class="btn btn-sm btn-secondary me-2">Editar</a>
+                                <form action="{{ route('produtos.destroy', $produto) }}" method="POST" onsubmit="return confirm('Deseja desativar este produto?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-warning">Desativar</button>
+                                </form>
+                            @endif
                         </td>
                     </tr>
                 {{-- ... e se a variável $produtos estiver vazia, ela mostra o bloco @empty. --}}
                 @empty
                     <tr>
-                        <td colspan="6" class="text-center">Nenhum produto cadastrado.</td>
+                        <td colspan="7" class="text-center">Nenhum produto cadastrado.</td>
                     </tr>
                 @endforelse
             </tbody>

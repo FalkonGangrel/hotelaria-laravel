@@ -14,7 +14,7 @@ class ProdutoController extends Controller
     public function index()
     {
          // 1. Buscamos os produtos E seus fornecedores de forma otimizada
-        $produtos = Produto::with('fornecedor')->get();
+        $produtos = Produto::withTrashed()->with('fornecedor')->get();
 
         // 2. Retornamos a VIEW, passando a variável 'produtos' para ela
         return view('produtos.index', ['produtos' => $produtos]);
@@ -85,8 +85,11 @@ class ProdutoController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Produto $produto)
     {
         //
+        $produto->delete();
+
+        return redirect()->route('produtos.index')->with('success', 'Produto desativado com sucesso!');
     }
 }
