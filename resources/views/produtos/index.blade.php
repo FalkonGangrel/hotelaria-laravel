@@ -54,8 +54,12 @@
                         </td>
                         <td class="d-flex">
                             @if ($produto->trashed())
-                                {{-- LÓGICA DE RESTAURAR (será implementada) --}}
-                                <button class="btn btn-sm btn-info">Restaurar</button>
+                                {{-- Formulário para a ação de restaurar --}}
+                                <form action="{{ route('produtos.restore', $produto->id) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" class="btn btn-sm btn-info">Restaurar</button>
+                                </form>
                             @else
                                 {{-- LÓGICA DE DELETAR (que já temos) --}}
                                 <a href="{{ route('produtos.edit', $produto) }}" class="btn btn-sm btn-secondary me-2">Editar</a>

@@ -23,3 +23,4 @@ Route::get('/', function () {
 
 // Rota para o recurso 'produtos', mapeando para o ProdutoController
 Route::resource('produtos', ProdutoController::class);
+Route::patch('produtos/{produto}/restore', [ProdutoController::class, 'restore'])->name('produtos.restore');

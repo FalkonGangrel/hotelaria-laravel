@@ -92,4 +92,27 @@ class ProdutoController extends Controller
 
         return redirect()->route('produtos.index')->with('success', 'Produto desativado com sucesso!');
     }
+
+    /**
+     * Restaura um produto que foi "soft-deleted".
+     *
+     * @param  int  $id O ID do produto a ser restaurado.
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function restore($id)
+    {
+        // 1. ENCONTRAR O PRODUTO "DELETADO"
+        // É CRUCIAL usar o método withTrashed() aqui. Sem ele, o Laravel
+        // não encontrará o produto, pois ele está "no lixo".
+        // findOrFail() tentará encontrar e, se não conseguir, gerará um erro 404.
+        $produto = Produto::withTrashed()->findOrFail($id);
+
+        // 2. RESTAURAR
+        // A trait SoftDeletes nos dá este método mágico. Ele simplesmente
+        // define a coluna 'deleted_at' de volta para NULL.
+        $produto->restore();
+
+        // 3. REDIRECIONAR
+        return redirect()->route('produtos.index')->with('success', 'Produto restaurado com sucesso!');
+    }
 }
