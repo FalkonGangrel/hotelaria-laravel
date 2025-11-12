@@ -1,119 +1,108 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Lista de Fornecedores</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        /* Pequeno ajuste para o ícone de ordenação */
-        th a { text-decoration: none; color: inherit; }
-        th a:hover { color: #fff; }
-    </style>
-</head>
-<body>
-    <div class="container mt-5">
-        <h1>Lista de Fornecedores</h1>
-        <a href="{{ route('produtos.index') }}" class="btn btn-info mb-2">Ver Produtos</a>
-        <hr>
+{{-- 1. Diz ao Blade que esta view estende o nosso layout mestre --}}
+@extends('layouts.app')
 
-        @if (session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
-        @endif
+{{-- 2. Define o conteúdo da seção 'title' que está no layout mestre --}}
+@section('title', 'Lista de Fornecedores')
 
-        <!-- SEÇÃO DE FILTROS E CONTROLES -->
-        <div class="card bg-light mb-3">
-            <div class="card-body">
-                <form method="GET" action="{{ route('fornecedores.index') }}" class="row g-3 align-items-center">
-                    <div class="col-md-8">
-                        <label for="filter_nome" class="form-label">Filtrar por Nome:</label>
-                        <input type="text" name="filter_nome" id="filter_nome" class="form-control" value="{{ $filters['filter_nome'] ?? '' }}">
-                    </div>
-                    <!-- <div class="col-md-4">
-                        <label for="filter_fornecedor" class="form-label">Filtrar por Fornecedor:</label>
-                        <input type="text" name="filter_fornecedor" id="filter_fornecedor" class="form-control" value="{{ $filters['filter_fornecedor'] ?? '' }}">
-                    </div> -->
-                    <div class="col-md-2">
-                        <label for="per_page" class="form-label">Itens por página:</label>
-                        <select name="per_page" id="per_page" class="form-select">
-                            <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10</option>
-                            <option value="25" {{ $perPage == 25 ? 'selected' : '' }}>25</option>
-                            <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50</option>
-                            <option value="100" {{ $perPage == 100 ? 'selected' : '' }}>100</option>
-                        </select>
-                    </div>
-                    <div class="col-md-2 d-flex align-items-end">
-                        <button type="submit" class="btn btn-primary me-2">Filtrar</button>
-                        <a href="{{ route('fornecedores.index') }}" class="btn btn-secondary">Limpar</a>
-                    </div>
-                </form>
-            </div>
-        </div>
+{{-- 3. Todo o conteúdo específico da página vai dentro da seção 'content' --}}
+@section('content')
+    <h1>Lista de Fornecedores</h1>
+    <hr>
 
-        <a href="{{ route('fornecedores.create') }}" class="btn btn-primary mb-3">Adicionar Fornecedor</a>
+    @if (session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
 
-        <table class="table table-striped table-hover">
-            <thead class="table-dark">
-                <tr>
-                    @php
-                        $linkParams = array_merge($filters, ['per_page' => $perPage]);
-                        $direction = ($sortBy == 'id' && $sortDirection == 'asc') ? 'desc' : 'asc';
-                    @endphp
-                    <th><a href="{{ route('fornecedores.index', array_merge($linkParams, ['sort_by' => 'id', 'sort_direction' => $direction])) }}">ID {!! $sortBy == 'id' ? ($sortDirection == 'asc' ? '&#9650;' : '&#9660;') : '' !!}</a></th>
-
-                    @php $direction = ($sortBy == 'nome' && $sortDirection == 'asc') ? 'desc' : 'asc'; @endphp
-                    <th><a href="{{ route('fornecedores.index', array_merge($linkParams, ['sort_by' => 'nome', 'sort_direction' => $direction])) }}">Nome {!! $sortBy == 'nome' ? ($sortDirection == 'asc' ? '&#9650;' : '&#9660;') : '' !!}</a></th>
-                    <th>CNPJ</th>
-                    <th>Email</th>
-                    <th>Status</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($fornecedores as $fornecedor)
-                    <tr>
-                        <td>{{ $fornecedor->id }}</td>
-                        <td>{{ $fornecedor->nome }}</td>
-                        <td>{{ $fornecedor->cnpj }}</td>
-                        <td>{{ $fornecedor->email ?? 'N/A' }}</td>
-                        <td>
-                            @if ($fornecedor->trashed())
-                                <span class="badge bg-warning text-dark">Inativo</span>
-                            @else
-                                <span class="badge bg-success">Ativo</span>
-                            @endif
-                        </td>
-                        <td class="d-flex">
-                            @if ($fornecedor->trashed())
-                                {{-- Formulário para a ação de restaurar --}}
-                                <form action="{{ route('fornecedores.restore', $fornecedor->id) }}" method="POST" class="d-inline">
-                                    @csrf
-                                    @method('PATCH')
-                                    <button type="submit" class="btn btn-sm btn-info">Restaurar</button>
-                                </form>
-                            @else
-                                <a href="{{ route('fornecedores.edit', $fornecedor) }}" class="btn btn-sm btn-secondary me-2">Editar</a>
-                                <form action="{{ route('fornecedores.destroy', $fornecedor) }}" method="POST" onsubmit="return confirm('Deseja desativar este fornecedor?');" class="d-inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-warning">Desativar</button>
-                                </form>
-                            @endif
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="6" class="text-center">Nenhum fornecedor cadastrado.</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-
-        <!-- RODAPÉ: LINKS DE PAGINAÇÃO -->
-        <div class="d-flex justify-content-center">
-            {{-- O método appends() é CRUCIAL. Ele adiciona todos os parâmetros atuais (filtros, ordenação)
-                aos links de paginação, para que você não perca seu filtro ao mudar de página. --}}
-            {!! $fornecedores->appends(request()->query())->links() !!}
+    <!-- SEÇÃO DE FILTROS E CONTROLES -->
+    <div class="card bg-light mb-3">
+        <div class="card-body">
+            <form method="GET" action="{{ route('fornecedores.index') }}" class="row g-3 align-items-center">
+                <div class="col-md-8">
+                    <label for="filter_nome" class="form-label">Filtrar por Nome:</label>
+                    <input type="text" name="filter_nome" id="filter_nome" class="form-control" value="{{ $filters['filter_nome'] ?? '' }}">
+                </div>
+                <!-- <div class="col-md-4">
+                    <label for="filter_fornecedor" class="form-label">Filtrar por Fornecedor:</label>
+                    <input type="text" name="filter_fornecedor" id="filter_fornecedor" class="form-control" value="{{ $filters['filter_fornecedor'] ?? '' }}">
+                </div> -->
+                <div class="col-md-2">
+                    <label for="per_page" class="form-label">Itens por página:</label>
+                    <select name="per_page" id="per_page" class="form-select">
+                        <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10</option>
+                        <option value="25" {{ $perPage == 25 ? 'selected' : '' }}>25</option>
+                        <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50</option>
+                        <option value="100" {{ $perPage == 100 ? 'selected' : '' }}>100</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">Filtrar</button>
+                    <a href="{{ route('fornecedores.index') }}" class="btn btn-secondary">Limpar</a>
+                </div>
+            </form>
         </div>
     </div>
-</body>
-</html>
+
+    <a href="{{ route('fornecedores.create') }}" class="btn btn-primary mb-3">Adicionar Fornecedor</a>
+
+    <table class="table table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                @php
+                    $linkParams = array_merge($filters, ['per_page' => $perPage]);
+                    $direction = ($sortBy == 'id' && $sortDirection == 'asc') ? 'desc' : 'asc';
+                @endphp
+                <th><a href="{{ route('fornecedores.index', array_merge($linkParams, ['sort_by' => 'id', 'sort_direction' => $direction])) }}">ID {!! $sortBy == 'id' ? ($sortDirection == 'asc' ? '&#9650;' : '&#9660;') : '' !!}</a></th>
+
+                @php $direction = ($sortBy == 'nome' && $sortDirection == 'asc') ? 'desc' : 'asc'; @endphp
+                <th><a href="{{ route('fornecedores.index', array_merge($linkParams, ['sort_by' => 'nome', 'sort_direction' => $direction])) }}">Nome {!! $sortBy == 'nome' ? ($sortDirection == 'asc' ? '&#9650;' : '&#9660;') : '' !!}</a></th>
+                <th>CNPJ</th>
+                <th>Email</th>
+                <th>Status</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse ($fornecedores as $fornecedor)
+                <tr>
+                    <td>{{ $fornecedor->id }}</td>
+                    <td>{{ $fornecedor->nome }}</td>
+                    <td>{{ $fornecedor->cnpj }}</td>
+                    <td>{{ $fornecedor->email ?? 'N/A' }}</td>
+                    <td>
+                        @if ($fornecedor->trashed())
+                            <span class="badge bg-warning text-dark">Inativo</span>
+                        @else
+                            <span class="badge bg-success">Ativo</span>
+                        @endif
+                    </td>
+                    <td class="d-flex">
+                        @if ($fornecedor->trashed())
+                            {{-- Formulário para a ação de restaurar --}}
+                            <form action="{{ route('fornecedores.restore', $fornecedor->id) }}" method="POST" class="d-inline">
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit" class="btn btn-sm btn-info">Restaurar</button>
+                            </form>
+                        @else
+                            <a href="{{ route('fornecedores.edit', $fornecedor) }}" class="btn btn-sm btn-secondary me-2">Editar</a>
+                            <form action="{{ route('fornecedores.destroy', $fornecedor) }}" method="POST" onsubmit="return confirm('Deseja desativar este fornecedor?');" class="d-inline">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-sm btn-warning">Desativar</button>
+                            </form>
+                        @endif
+                    </td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="6" class="text-center">Nenhum fornecedor cadastrado.</td>
+                </tr>
+            @endforelse
+        </tbody>
+    </table>
+
+    <!-- RODAPÉ: LINKS DE PAGINAÇÃO -->
+    <div class="d-flex justify-content-center">
+        {!! $fornecedores->appends(request()->query())->links() !!}
+    </div>
+@endsection
