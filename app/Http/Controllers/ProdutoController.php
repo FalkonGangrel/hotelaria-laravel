@@ -11,13 +11,56 @@ class ProdutoController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-         // 1. Buscamos os produtos E seus fornecedores de forma otimizada
+        // 1. DEFINIÇÃO DE VALORES PADRÃO
+        $sortBy = $request->query('sort_by', 'id'); // Padrão é ordenar por ID
+        $sortDirection = $request->query('sort_direction', 'asc'); // Padrão é ascendente
+        $perPage = $request->query('per_page', 10); // Padrão é 10 itens por página
+        $filters = $request->only(['filter_nome', 'filter_fornecedor']); // Pega apenas os filtros relevantes
+
+        // 2. CONSTRUÇÃO DA QUERY BASE
+        // Usamos Produto::query() para iniciar um construtor de query, o que nos permite
+        // adicionar cláusulas dinamicamente. Também já incluímos o fornecedor.
+        $query = Produto::query()->withTrashed()->with('fornecedor');
+
+        // 3. APLICAÇÃO DOS FILTROS (SE EXISTIREM)
+        // Usamos o método when() para aplicar o filtro apenas se o valor não for nulo/vazio.
+        $query->when($filters['filter_nome'] ?? null, function ($q, $nome) {
+            // Usa 'LIKE' para buscar por partes do nome.
+            $q->where('produtos.nome', 'like', '%' . $nome . '%');
+        });
+
+        $query->when($filters['filter_fornecedor'] ?? null, function ($q, $fornecedorNome) {
+            // Filtra com base no nome do fornecedor, usando a relação.
+            $q->whereHas('fornecedor', function ($subQuery) use ($fornecedorNome) {
+                $subQuery->where('nome', 'like', '%' . $fornecedorNome . '%');
+            });
+        });
+
+        // 4. APLICAÇÃO DA ORDENAÇÃO
+        $query->orderBy($sortBy, $sortDirection);
+
+        // 5. EXECUÇÃO DA PAGINAÇÃO
+        // O método paginate() faz a consulta no banco e já organiza os resultados por página.
+        $produtos = $query->paginate($perPage);
+
+        // 6. ENVIANDO OS DADOS PARA A VIEW
+        return view('produtos.index', [
+            'produtos' => $produtos,
+            'filters' => $filters,
+            'sortBy' => $sortBy,
+            'sortDirection' => $sortDirection,
+            'perPage' => $perPage,
+        ]);
+
+        /*
+        // 1. Buscamos os produtos E seus fornecedores de forma otimizada
         $produtos = Produto::withTrashed()->with('fornecedor')->get();
 
         // 2. Retornamos a VIEW, passando a variável 'produtos' para ela
         return view('produtos.index', ['produtos' => $produtos]);
+        */
     }
 
     /**
