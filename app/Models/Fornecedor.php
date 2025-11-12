@@ -3,11 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Model;
 
 class Fornecedor extends Model
 {
     use HasFactory;
+    use SoftDeletes;
 
     /**
      * O nome da tabela associada com o model.
@@ -15,6 +17,12 @@ class Fornecedor extends Model
      * @var string
      */
     protected $table = 'fornecedores';
+
+    protected $fillable = [
+        'nome',
+        'cnpj',
+        'email',
+    ];
     
     /**
      * Define o relacionamento de que "Fornecedor possui muitos Produtos".

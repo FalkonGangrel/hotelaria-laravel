@@ -2,6 +2,7 @@
 
 // Linhas para importar controllers
 use App\Http\Controllers\ProdutoController;
+use App\Http\Controllers\FornecedorController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -24,3 +25,7 @@ Route::get('/', function () {
 // Rota para o recurso 'produtos', mapeando para o ProdutoController
 Route::resource('produtos', ProdutoController::class);
 Route::patch('produtos/{produto}/restore', [ProdutoController::class, 'restore'])->name('produtos.restore');
+
+// Rota para o recurso 'fornecedores', mapeando para o FornecedorController
+Route::resource('fornecedores', FornecedorController::class)->parameters(['fornecedores' => 'fornecedor']);
+Route::patch('fornecedores/{fornecedor}/restore', [FornecedorController::class, 'restore'])->name('fornecedores.restore');
