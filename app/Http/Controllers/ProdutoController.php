@@ -1,10 +1,10 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Models\Produto; // <-- IMPORTANTE: Importe o Model Produto
 use App\Models\Fornecedor; // Importar o Model Fornecedor
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class ProdutoController extends Controller
 {
@@ -43,8 +43,16 @@ class ProdutoController extends Controller
         // Se a validação falhar, o Laravel automaticamente redireciona
         // o usuário de volta para o formulário, com as mensagens de erro.
         $validatedData = $request->validate([
-            'descricao' => 'nullable|string',
-            'fornecedor_id' => 'required|exists:fornecedores,id', // Garante que o ID do fornecedor existe na tabela 'fornecedores'
+            'nome' => ['required', 'string'],
+            'descricao' => ['nullable','string'],
+            'preco_venda' => ['required', 'numeric', 'min:0'],
+            'quantidade_estoque' => ['required', 'integer', 'min:0'],
+            'estoque_minimo' => ['nullable', 'integer', 'min:0'],
+            // Validações específicas para o fornecedor
+            'fornecedor_id' => [
+                'required',
+                Rule::exists('fornecedores', 'id'), // Garante que o ID do fornecedor existe na tabela 'fornecedores'
+            ],
         ]);
 
         // 2. CRIAÇÃO
@@ -69,17 +77,33 @@ class ProdutoController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(Produto $produto)
     {
-        //
+        $fornecedores = Fornecedor::all();
+
+        // Retornamos a view do formulário de criação
+        return view('produtos.edit', ['produto' => $produto, 'fornecedores' => $fornecedores]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Produto $produto)
     {
-        //
+        $validatedData = $request->validate([
+            'nome' => ['required', 'string'],
+            'descricao' => ['nullable','string'],
+            'preco_venda' => ['required', 'numeric', 'min:0'],
+            'quantidade_estoque' => ['required', 'integer', 'min:0'],
+            'estoque_minimo' => ['nullable', 'integer', 'min:0'],
+            // Validações específicas para o fornecedor
+            'fornecedor_id' => [
+                'required',
+                Rule::exists('fornecedores', 'id'), // Garante que o ID do fornecedor existe na tabela 'fornecedores'
+            ],
+        ]);
+        $produto->update($validatedData);
+        return redirect()->route('produtos.index')->with('success', 'Produto atualizado com sucesso!');
     }
 
     /**
