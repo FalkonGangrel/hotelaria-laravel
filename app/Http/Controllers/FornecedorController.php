@@ -8,11 +8,28 @@ use Illuminate\Validation\Rule;
 
 class FornecedorController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // O orderBy('nome') é uma boa prática para manter a lista organizada.
-        $fornecedores = Fornecedor::withTrashed()->orderBy('nome')->get();
-        return view('fornecedores.index', ['fornecedores' => $fornecedores]);
+
+        $sortBy = $request->query('sort_by', 'id'); // Padrão é ordenar por ID
+        $sortDirection = $request->query('sort_direction', 'asc'); // Padrão é ascendente
+        $perPage = $request->query('per_page', 10); // Padrão é 10 itens por página
+        $filters = $request->only(['filter_nome']); // Pega apenas os filtros relevantes
+
+        $query = Fornecedor::withTrashed();
+        $query->when($filters['filter_nome'] ?? null, function ($q, $nome) {
+            $q->where('nome', 'like', '%' . $nome . '%');
+        });
+        $query->orderBy($sortBy, $sortDirection);
+        $fornecedores = $query->paginate($perPage);
+
+        return view('fornecedores.index', [
+            'fornecedores' => $fornecedores,
+            'filters' => $filters,
+            'sortBy' => $sortBy,
+            'sortDirection' => $sortDirection,
+            'perPage' => $perPage,
+        ]);
     }
 
     public function create()
