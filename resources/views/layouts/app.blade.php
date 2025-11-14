@@ -16,6 +16,11 @@
         /* Garante que o layout ocupe a altura toda */
         body, html { height: 100%; }
         main { display: flex; flex-wrap: nowrap; height: 100vh; }
+
+        /* Pequeno ajuste para o ícone de ordenação */
+        th a { text-decoration: none; color: inherit; }
+        th a:hover { color: #fff; }
+
         .content-area { flex-grow: 1; overflow-y: auto; padding: 2rem; }
     </style>
 </head>

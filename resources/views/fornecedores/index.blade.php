@@ -9,10 +9,6 @@
     <h1>Lista de Fornecedores</h1>
     <hr>
 
-    @if (session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
-
     <!-- SEÇÃO DE FILTROS E CONTROLES -->
     <div class="card bg-light mb-3">
         <div class="card-body">

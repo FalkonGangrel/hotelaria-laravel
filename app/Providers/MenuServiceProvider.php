@@ -31,19 +31,19 @@ class MenuServiceProvider extends ServiceProvider
                     'title' => 'Dashboard',
                     'route' => 'dashboard',
                     'icon'  => 'bi-house-door-fill', // Ícone do Bootstrap Icons
-                    'roles' => ['admin', 'user'], // Visível para admin e user
+                    'roles' => ['master','admin', 'user'], // Visível para master, admin e user
                 ],
                 [
                     'title' => 'Produtos',
                     'route' => 'produtos.index',
                     'icon'  => 'bi-box-seam-fill',
-                    'roles' => ['admin'], // Visível apenas para admin
+                    'roles' => ['master','admin'], // Visível apenas para master e admin
                 ],
                 [
                     'title' => 'Fornecedores',
                     'route' => 'fornecedores.index',
                     'icon'  => 'bi-truck-front-fill',
-                    'roles' => ['admin'], // Visível apenas para admin
+                    'roles' => ['master','admin'], // Visível apenas para master e admin
                 ],
                 // Adicione aqui futuros itens de menu...
             ];
