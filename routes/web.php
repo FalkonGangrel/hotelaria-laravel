@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProdutoController;
 use App\Http\Controllers\FornecedorController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -46,6 +47,10 @@ Route::middleware('auth')->group(function () {
         'fornecedores' => 'fornecedor'
     ]);
     Route::patch('fornecedores/{fornecedor}/restore', [FornecedorController::class, 'restore'])->name('fornecedores.restore');
+
+    // NOSSAS ROTAS DE USUÁRIOS (GERENCIAMENTO DE USUÁRIOS)
+    Route::resource('users', UserController::class);
+    Route::patch('/users/{user}/restore', [UserController::class, 'restore'])->name('users.restore');
 });
 
 

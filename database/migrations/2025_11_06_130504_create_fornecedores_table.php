@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('email')->unique(); // Coluna para o e-mail, valor deve ser único
             $table->string('telefone')->nullable(); // Coluna para telefone, pode ser nulo
             $table->timestamps(); // Cria as colunas 'created_at' e 'updated_at' automaticamente
+            $table->softDeletes(); // Adiciona a coluna 'deleted_at' para soft deletes
         });
     }
 

@@ -26,6 +26,8 @@ return new class extends Migration
             $table->foreignId('fornecedor_id')->constrained('fornecedores');
 
             $table->timestamps();
+
+            $table->softDeletes(); // Adiciona a coluna 'deleted_at' para soft deletes
         });
     }
 

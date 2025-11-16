@@ -2,18 +2,19 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Foundation\Auth\Access\Authorizable;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    // Adicione a trait SoftDeletes
+    use HasFactory, Notifiable, SoftDeletes,Authorizable;
 
     /**
-     * The attributes that are mass assignable.
+     * Os atributos que podem ser atribuídos em massa.
      *
      * @var array<int, string>
      */
@@ -21,10 +22,12 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'photo_path', // Permitir atribuição em massa para o caminho da foto
+        'role',       // Permitir atribuição em massa para o papel/função
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
+     * Os atributos que devem ser escondidos nas serializações.
      *
      * @var array<int, string>
      */
@@ -34,12 +37,15 @@ class User extends Authenticatable
     ];
 
     /**
-     * The attributes that should be cast.
+     * Os atributos que devem ser convertidos para tipos nativos.
      *
      * @var array<string, string>
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        // Esta é uma feature de segurança moderna do Laravel 10+.
+        // Garante que qualquer valor passado para o campo 'password'
+        // seja automaticamente criptografado usando o Hash do Laravel.
         'password' => 'hashed',
     ];
 }
