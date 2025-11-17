@@ -123,9 +123,8 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('success', 'Usuário desativado com sucesso.');
     }
 
-    public function restore($id)
+    public function restore(User $user)
     {
-        $user = User::withTrashed()->findOrFail($id);
         $this->authorize('restore', $user);
         $user->restore();
         return redirect()->route('users.index')->with('success', 'Usuário reativado com sucesso.');

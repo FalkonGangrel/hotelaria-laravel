@@ -40,17 +40,23 @@ Route::middleware('auth')->group(function () {
 
     // NOSSAS ROTAS DE PRODUTOS
     Route::resource('produtos', ProdutoController::class);
-    Route::patch('produtos/{produto}/restore', [ProdutoController::class, 'restore'])->name('produtos.restore');
+    Route::patch('produtos/{produto}/restore', [ProdutoController::class, 'restore'])
+        ->name('produtos.restore')
+        ->withTrashed();
 
     // NOSSAS ROTAS DE FORNECEDORES
     Route::resource('fornecedores', FornecedorController::class)->parameters([
         'fornecedores' => 'fornecedor'
     ]);
-    Route::patch('fornecedores/{fornecedor}/restore', [FornecedorController::class, 'restore'])->name('fornecedores.restore');
+    Route::patch('fornecedores/{fornecedor}/restore', [FornecedorController::class, 'restore'])
+        ->name('fornecedores.restore')
+        ->withTrashed();
 
     // NOSSAS ROTAS DE USUÁRIOS (GERENCIAMENTO DE USUÁRIOS)
     Route::resource('users', UserController::class);
-    Route::patch('/users/{user}/restore', [UserController::class, 'restore'])->name('users.restore');
+    Route::patch('/users/{user}/restore', [UserController::class, 'restore'])
+        ->name('users.restore')
+        ->withTrashed();
 });
 
 
