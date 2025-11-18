@@ -3,34 +3,52 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Fornecedor extends Model
 {
-    use HasFactory;
-    use SoftDeletes;
+    use HasFactory, SoftDeletes;
 
     /**
-     * O nome da tabela associada com o model.
+     * O nome da tabela associada ao model.
      *
      * @var string
      */
     protected $table = 'fornecedores';
 
-    protected $fillable = [
-        'nome',
-        'cnpj',
-        'email',
-    ];
-    
     /**
-     * Define o relacionamento de que "Fornecedor possui muitos Produtos".
+     * Os atributos que podem ser atribuídos em massa.
+     *
+     * @var array<int, string>
      */
-    public function produtos()
+    protected $fillable = [
+        'razao_social',
+        'nome_fantasia',
+        'cnpj',
+        'ie',
+        'email',
+        'email2',
+        'telefone',
+        'telefone2',
+        'logradouro',
+        'numero',
+        'complemento',
+        'bairro',
+        'cidade',
+        'uf',
+        'cep',
+        'status',
+        'observacoes',
+        'user_id',
+    ];
+
+    /**
+     * Define a relação de pertencimento a um Usuário.
+     * Um fornecedor pertence a uma conta de usuário.
+     */
+    public function user()
     {
-        // 'hasMany' significa "tem muitos".
-        // Estamos dizendo que um fornecedor pode ter vários produtos.
-        return $this->hasMany(Produto::class);
+        return $this->belongsTo(User::class);
     }
 }

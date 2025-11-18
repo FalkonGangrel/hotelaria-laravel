@@ -48,4 +48,12 @@ class User extends Authenticatable
         // seja automaticamente criptografado usando o Hash do Laravel.
         'password' => 'hashed',
     ];
+
+    /**
+     * Define a relação de que um Usuário (do tipo fornecedor) tem um registro de Fornecedor.
+     */
+    public function fornecedor()
+    {
+        return $this->hasOne(Fornecedor::class);
+    }
 }

@@ -1,32 +1,250 @@
-{{-- 1. Diz ao Blade que esta view estende o nosso layout mestre --}}
 @extends('layouts.app')
 
-{{-- 2. Define o conteúdo da seção 'title' que está no layout mestre --}}
-@section('title', 'Edição de Fornecedores')
+@section('title', 'Editar Fornecedor: ' . $fornecedor->nome_fantasia)
 
-{{-- 3. Todo o conteúdo específico da página vai dentro da seção 'content' --}}
 @section('content')
-    <h1>Editar Fornecedor: {{ $fornecedor->nome }}</h1>
+    {{-- MUDANÇA 1: Título da página --}}
+    <h1>Editar Fornecedor: <span class="text-primary">{{ $fornecedor->nome_fantasia ?: $fornecedor->razao_social }}</span></h1>
     <hr>
+
+    {{-- MUDANÇA 2: Rota do formulário e método --}}
     <form action="{{ route('fornecedores.update', $fornecedor) }}" method="POST">
         @csrf
-        @method('PUT')
-        <div class="mb-3">
-            <label for="nome" class="form-label">Nome</label>
-            <input type="text" class="form-control" name="nome" value="{{ old('nome', $fornecedor->nome) }}" required>
-            @error('nome') <div class="text-danger">{{ $message }}</div> @enderror
+        @method('PATCH')
+
+        {{-- O alerta continua útil aqui --}}
+        <div class="alert alert-info" role="alert">
+            <h4 class="alert-heading">Preenchimento Automático!</h4>
+            <p>Precisa atualizar os dados? Digite um CNPJ diferente para buscar novas informações.</p>
         </div>
-        <div class="mb-3">
-            <label for="cnpj" class="form-label">CNPJ</label>
-            <input type="text" class="form-control" name="cnpj" value="{{ old('cnpj', $fornecedor->cnpj) }}" required>
-            @error('cnpj') <div class="text-danger">{{ $message }}</div> @enderror
+
+        {{-- Seção Dados da Empresa --}}
+        <div class="card mb-3">
+            <div class="card-header">Dados da Empresa</div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="cnpj" class="form-label">CNPJ <span class="text-danger">*</span></label>
+                        {{-- MUDANÇA 3: Preenchimento dos campos com old() e o valor do banco --}}
+                        <input type="text" class="form-control @error('cnpj') is-invalid @enderror" id="cnpj" name="cnpj" value="{{ old('cnpj', $fornecedor->cnpj) }}" required>
+                        <small class="form-text text-muted">Digite apenas os números.</small>
+                        @error('cnpj')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="col-md-8 mb-3">
+                        <label for="razao_social" class="form-label">Razão Social <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control @error('razao_social') is-invalid @enderror" id="razao_social" name="razao_social" value="{{ old('razao_social', $fornecedor->razao_social) }}" required>
+                        @error('razao_social')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="nome_fantasia" class="form-label">Nome Fantasia</label>
+                        <input type="text" class="form-control @error('nome_fantasia') is-invalid @enderror" id="nome_fantasia" name="nome_fantasia" value="{{ old('nome_fantasia', $fornecedor->nome_fantasia) }}">
+                        @error('nome_fantasia')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="ie" class="form-label">Inscrição Estadual</label>
+                        <input type="text" class="form-control @error('ie') is-invalid @enderror" id="ie" name="ie" value="{{ old('ie', $fornecedor->ie) }}">
+                        @error('ie')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
+                        <select class="form-select @error('status') is-invalid @enderror" id="status" name="status" required>
+                            {{-- Lógica especial para o select --}}
+                            <option value="ativo" {{ old('status', $fornecedor->status) == 'ativo' ? 'selected' : '' }}>Ativo</option>
+                            <option value="inativo" {{ old('status', $fornecedor->status) == 'inativo' ? 'selected' : '' }}>Inativo</option>
+                            <option value="em_analise" {{ old('status', $fornecedor->status) == 'em_analise' ? 'selected' : '' }}>Em Análise</option>
+                            <option value="suspenso" {{ old('status', $fornecedor->status) == 'suspenso' ? 'selected' : '' }}>Suspenso</option>
+                        </select>
+                        @error('status')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="mb-3">
-            <label for="email" class="form-label">Email</label>
-            <input type="email" class="form-control" name="email" value="{{ old('email', $fornecedor->email) }}">
-            @error('email') <div class="text-danger">{{ $message }}</div> @enderror
+
+        {{-- Seção Contato --}}
+        <div class="card mb-3">
+            <div class="card-header">Contato</div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="email" class="form-label">E-mail Principal <span class="text-danger">*</span></label>
+                        <input type="email" class="form-control @error('email') is-invalid @enderror" id="email" name="email" value="{{ old('email', $fornecedor->email) }}" required>
+                        @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="email2" class="form-label">E-mail Secundário</label>
+                        <input type="email" class="form-control @error('email2') is-invalid @enderror" id="email2" name="email2" value="{{ old('email2', $fornecedor->email2) }}">
+                        @error('email2')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label for="telefone" class="form-label">Telefone Principal</label>
+                        <input type="text" class="form-control @error('telefone') is-invalid @enderror" id="telefone" name="telefone" value="{{ old('telefone', $fornecedor->telefone) }}">
+                        @error('telefone')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label for="telefone2" class="form-label">Telefone Secundário</label>
+                        <input type="text" class="form-control @error('telefone2') is-invalid @enderror" id="telefone2" name="telefone2" value="{{ old('telefone2', $fornecedor->telefone2) }}">
+                        @error('telefone2')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                </div>
+            </div>
         </div>
-        <button type="submit" class="btn btn-success">Salvar Alterações</button>
+
+        {{-- Seção Endereço --}}
+        <div class="card mb-3">
+            <div class="card-header">Endereço</div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label for="cep" class="form-label">CEP</label>
+                        <input type="text" class="form-control @error('cep') is-invalid @enderror" id="cep" name="cep" value="{{ old('cep', $fornecedor->cep) }}">
+                        <small class="form-text text-muted">Digite e saia do campo para buscar.</small>
+                        @error('cep')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="col-md-7 mb-3">
+                        <label for="logradouro" class="form-label">Logradouro</label>
+                        <input type="text" class="form-control @error('logradouro') is-invalid @enderror" id="logradouro" name="logradouro" value="{{ old('logradouro', $fornecedor->logradouro) }}">
+                        @error('logradouro')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label for="numero" class="form-label">Número</label>
+                        <input type="text" class="form-control @error('numero') is-invalid @enderror" id="numero" name="numero" value="{{ old('numero', $fornecedor->numero) }}">
+                        @error('numero')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="complemento" class="form-label">Complemento</label>
+                        <input type="text" class="form-control @error('complemento') is-invalid @enderror" id="complemento" name="complemento" value="{{ old('complemento', $fornecedor->complemento) }}">
+                        @error('complemento')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="bairro" class="form-label">Bairro</label>
+                        <input type="text" class="form-control @error('bairro') is-invalid @enderror" id="bairro" name="bairro" value="{{ old('bairro', $fornecedor->bairro) }}">
+                        @error('bairro')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="cidade" class="form-label">Cidade</label>
+                        <input type="text" class="form-control @error('cidade') is-invalid @enderror" id="cidade" name="cidade" value="{{ old('cidade', $fornecedor->cidade) }}">
+                        @error('cidade')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="col-md-1 mb-3">
+                        <label for="uf" class="form-label">UF</label>
+                        <input type="text" class="form-control @error('uf') is-invalid @enderror" id="uf" name="uf" value="{{ old('uf', $fornecedor->uf) }}">
+                        @error('uf')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Seção Observações --}}
+        <div class="card mb-3">
+            <div class="card-header">Informações Adicionais</div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="observacoes" class="form-label">Observações Internas</label>
+                    <textarea class="form-control" id="observacoes" name="observacoes" rows="3">{{ old('observacoes', $fornecedor->observacoes) }}</textarea>
+                    <small class="form-text text-muted">Estas observações são para seu controle interno e não serão vistas pelo fornecedor.</small>
+                </div>
+            </div>
+        </div>
+
+
+        <hr>
+        {{-- MUDANÇA 4: Texto do botão --}}
+        <button type="submit" class="btn btn-primary">Atualizar Fornecedor</button>
         <a href="{{ route('fornecedores.index') }}" class="btn btn-secondary">Cancelar</a>
     </form>
+
+    @push('scripts')
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        const masks = {};
+
+        function preencherFormulario(data, manualMapping = {}, force = false) {
+
+            function preencherCampo(fieldId, value) {
+
+                const field = document.getElementById(fieldId);
+                if (!field) return;
+
+                // Se existe máscara
+                if (masks[fieldId]) {
+                    masks[fieldId].value = value;
+                    return;
+                }
+
+                // Campo normal
+                field.value = value;
+            }
+
+            // Loop automático (data.key -> campo com mesmo id)
+            for (const key in data) {
+                if (data.hasOwnProperty(key)) {
+                    preencherCampo(key, data[key]);
+                }
+            }
+
+            // Loop dos mapeamentos obrigatórios
+            for (const apiKey in manualMapping) {
+                if (data.hasOwnProperty(apiKey)) {
+                    preencherCampo(manualMapping[apiKey], data[apiKey]);
+                }
+            }
+        }
+
+        // --- MÁSCARAS ---
+        masks['cnpj'] = IMask(document.getElementById('cnpj'), { mask: '00.000.000/0000-00' });
+        masks['cep'] = IMask(document.getElementById('cep'), { mask: '00000-000' });
+        masks['telefone'] = IMask(document.getElementById('telefone'), { mask: '(00) 00000-0000' });
+        masks['telefone2'] = IMask(document.getElementById('telefone2'), { mask: '(00) 00000-0000' });
+
+        // --- BUSCA CNPJ ---
+        document.getElementById('cnpj').addEventListener('blur', function() {
+            const cnpj = masks['cnpj'].unmaskedValue;
+
+            if (cnpj.length === 14) {
+                fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpj}`)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (!data.cnpj) throw new Error("CNPJ inválido.");
+
+                        preencherFormulario(data, {
+                            municipio: 'cidade',
+                            ddd_telefone_1: 'telefone'
+                        });
+
+                        document.getElementById('numero').focus();
+                    })
+                    .catch(err => alert(err.message));
+            }
+        });
+
+        // --- BUSCA CEP ---
+        document.getElementById('cep').addEventListener('blur', function() {
+            const cep = masks['cep'].unmaskedValue;
+
+            if (cep.length === 8) {
+                fetch(`https://viacep.com.br/ws/${cep}/json/`)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.erro) throw new Error("CEP não encontrado.");
+
+                        preencherFormulario(data, {
+                            localidade: 'cidade'
+                        });
+
+                        document.getElementById('numero').focus();
+                    })
+                    .catch(err => alert(err.message));
+            }
+        });
+
+    });
+    </script>
+    @endpush
+
 @endsection

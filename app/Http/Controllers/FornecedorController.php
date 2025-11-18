@@ -10,16 +10,25 @@ class FornecedorController extends Controller
 {
     public function index(Request $request)
     {
-
-        $sortBy = $request->query('sort_by', 'id'); // Padrão é ordenar por ID
-        $sortDirection = $request->query('sort_direction', 'asc'); // Padrão é ascendente
-        $perPage = $request->query('per_page', 10); // Padrão é 10 itens por página
-        $filters = $request->only(['filter_nome']); // Pega apenas os filtros relevantes
+        // ... sua lógica de ordenação e paginação (está perfeita) ...
+        $sortBy = $request->query('sort_by', 'razao_social');
+        $sortDirection = $request->query('sort_direction', 'asc');
+        $perPage = $request->query('per_page', 10);
+        $filters = $request->only(['filter_q']); // MUDANÇA: Usaremos um filtro genérico 'q' (de query)
 
         $query = Fornecedor::withTrashed();
-        $query->when($filters['filter_nome'] ?? null, function ($q, $nome) {
-            $q->where('nome', 'like', '%' . $nome . '%');
+
+        // MUDANÇA: Lógica de busca aprimorada
+        // Agora, quando o usuário digitar no campo de busca, ele procurará
+        // tanto na razão social quanto no nome fantasia.
+        $query->when($filters['filter_q'] ?? null, function ($q, $search) {
+            $q->where(function ($subquery) use ($search) {
+                $subquery->where('razao_social', 'like', '%' . $search . '%')
+                        ->orWhere('nome_fantasia', 'like', '%' . $search . '%')
+                        ->orWhere('cnpj', 'like', '%' . $search . '%');
+            });
         });
+
         $query->orderBy($sortBy, $sortDirection);
         $fornecedores = $query->paginate($perPage);
 
@@ -39,25 +48,28 @@ class FornecedorController extends Controller
 
     public function store(Request $request)
     {
-        // 1. A validação é executada E o resultado é salvo na variável $validatedData.
+        // MUDANÇA: Validação sincronizada com a nova migration
         $validatedData = $request->validate([
-            'nome' => ['required', 'string', 'max:255'],
-            'cnpj' => [
-                'required',
-                'string',
-                'max:18',
-                Rule::unique('fornecedores', 'cnpj'),
-            ],
-            'email' => [
-                'nullable',
-                'email',
-                'max:255',
-                Rule::unique('fornecedores', 'email'),
-            ],
+            'razao_social' => ['required', 'string', 'max:255'],
+            'nome_fantasia' => ['nullable', 'string', 'max:255'],
+            'cnpj' => ['required', 'string', 'max:18', Rule::unique('fornecedores', 'cnpj')],
+            'ie' => ['nullable', 'string', 'max:20'],
+            'email' => ['required', 'email', 'max:255', Rule::unique('fornecedores', 'email')],
+            'email2' => ['nullable', 'email', 'max:255'],
+            'telefone' => ['nullable', 'string', 'max:20'],
+            'telefone2' => ['nullable', 'string', 'max:20'],
+            'logradouro' => ['nullable', 'string', 'max:255'],
+            'numero' => ['nullable', 'string', 'max:50'],
+            'complemento' => ['nullable', 'string', 'max:255'],
+            'bairro' => ['nullable', 'string', 'max:100'],
+            'cidade' => ['nullable', 'string', 'max:100'],
+            'uf' => ['nullable', 'string', 'max:2'],
+            'cep' => ['nullable', 'string', 'max:9'],
+            'status' => ['required', 'string', Rule::in(['ativo', 'inativo', 'em_analise', 'suspenso'])],
+            'observacoes' => ['nullable', 'string'],
+            // user_id será tratado separadamente
         ]);
 
-        // 2. A variável $validatedData (que contém os dados limpos e seguros)
-        // é passada para o método create().
         Fornecedor::create($validatedData);
 
         return redirect()->route('fornecedores.index')->with('success', 'Fornecedor cadastrado com sucesso!');
@@ -65,7 +77,7 @@ class FornecedorController extends Controller
 
     public function show(Fornecedor $fornecedor)
     {
-        // Lógica para visualizar um único fornecedor, se necessário.
+        // Geralmente não é necessário em painéis de admin
     }
 
     public function edit(Fornecedor $fornecedor)
@@ -75,20 +87,25 @@ class FornecedorController extends Controller
 
     public function update(Request $request, Fornecedor $fornecedor)
     {
+        // MUDANÇA: Validação sincronizada para o update
         $validatedData = $request->validate([
-            'nome' => ['required', 'string', 'max:255'],
-            'cnpj' => [
-                'required',
-                'string',
-                'max:18',
-                Rule::unique('fornecedores', 'cnpj')->ignore($fornecedor->id),
-            ],
-            'email' => [
-                'nullable',
-                'email',
-                'max:255',
-                Rule::unique('fornecedores', 'email')->ignore($fornecedor->id),
-            ],
+            'razao_social' => ['required', 'string', 'max:255'],
+            'nome_fantasia' => ['nullable', 'string', 'max:255'],
+            'cnpj' => ['required', 'string', 'max:18', Rule::unique('fornecedores', 'cnpj')->ignore($fornecedor->id)],
+            'ie' => ['nullable', 'string', 'max:20'],
+            'email' => ['required', 'email', 'max:255', Rule::unique('fornecedores', 'email')->ignore($fornecedor->id)],
+            'email2' => ['nullable', 'email', 'max:255'],
+            'telefone' => ['nullable', 'string', 'max:20'],
+            'telefone2' => ['nullable', 'string', 'max:20'],
+            'logradouro' => ['nullable', 'string', 'max:255'],
+            'numero' => ['nullable', 'string', 'max:50'],
+            'complemento' => ['nullable', 'string', 'max:255'],
+            'bairro' => ['nullable', 'string', 'max:100'],
+            'cidade' => ['nullable', 'string', 'max:100'],
+            'uf' => ['nullable', 'string', 'max:2'],
+            'cep' => ['nullable', 'string', 'max:9'],
+            'status' => ['required', 'string', Rule::in(['ativo', 'inativo', 'em_analise', 'suspenso'])],
+            'observacoes' => ['nullable', 'string'],
         ]);
 
         $fornecedor->update($validatedData);
@@ -102,17 +119,9 @@ class FornecedorController extends Controller
         return redirect()->route('fornecedores.index')->with('success', 'Fornecedor desativado com sucesso!');
     }
 
-    public function restore($id)
+    public function restore(Fornecedor $fornecedor) // MUDANÇA: Recebendo o Model diretamente
     {
-        $fornecedor = Fornecedor::withTrashed()->findOrFail($id);
-
-        // 2. RESTAURAR
-        // A trait SoftDeletes nos dá este método mágico. Ele simplesmente
-        // define a coluna 'deleted_at' de volta para NULL.
         $fornecedor->restore();
-
-        // 3. REDIRECIONAR
         return redirect()->route('fornecedores.index')->with('success', 'Fornecedor restaurado com sucesso!');
     }
-
 }

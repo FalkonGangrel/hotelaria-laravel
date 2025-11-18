@@ -1,104 +1,113 @@
-{{-- 1. Diz ao Blade que esta view estende o nosso layout mestre --}}
 @extends('layouts.app')
 
-{{-- 2. Define o conteúdo da seção 'title' que está no layout mestre --}}
-@section('title', 'Lista de Fornecedores')
+@section('title', 'Fornecedores')
 
-{{-- 3. Todo o conteúdo específico da página vai dentro da seção 'content' --}}
 @section('content')
-    <h1>Lista de Fornecedores</h1>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1>Fornecedores</h1>
+        <a href="{{ route('fornecedores.create') }}" class="btn btn-primary">Cadastrar Novo</a>
+    </div>
     <hr>
 
-    <!-- SEÇÃO DE FILTROS E CONTROLES -->
-    <div class="card bg-light mb-3">
-        <div class="card-body">
-            <form method="GET" action="{{ route('fornecedores.index') }}" class="row g-3 align-items-center">
-                <div class="col-md-8">
-                    <label for="filter_nome" class="form-label">Filtrar por Nome:</label>
-                    <input type="text" name="filter_nome" id="filter_nome" class="form-control" value="{{ $filters['filter_nome'] ?? '' }}">
-                </div>
-                <!-- <div class="col-md-4">
-                    <label for="filter_fornecedor" class="form-label">Filtrar por Fornecedor:</label>
-                    <input type="text" name="filter_fornecedor" id="filter_fornecedor" class="form-control" value="{{ $filters['filter_fornecedor'] ?? '' }}">
-                </div> -->
-                <div class="col-md-2">
-                    <label for="per_page" class="form-label">Itens por página:</label>
-                    <select name="per_page" id="per_page" class="form-select">
-                        <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10</option>
-                        <option value="25" {{ $perPage == 25 ? 'selected' : '' }}>25</option>
-                        <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50</option>
-                        <option value="100" {{ $perPage == 100 ? 'selected' : '' }}>100</option>
-                    </select>
-                </div>
-                <div class="col-md-2 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary me-2">Filtrar</button>
-                    <a href="{{ route('fornecedores.index') }}" class="btn btn-secondary">Limpar</a>
-                </div>
-            </form>
+    <div class="d-flex align-items-center gap-3 mb-3">
+        <strong>Legenda:</strong>
+        <div class="d-flex align-items-center">
+            <span class="badge rounded-pill bg-success me-1">&nbsp;</span> Ativo
+        </div>
+        <div class="d-flex align-items-center">
+            <span class="badge rounded-pill bg-warning me-1">&nbsp;</span> Em Análise
+        </div>
+        <div class="d-flex align-items-center">
+            <span class="badge rounded-pill bg-danger me-1">&nbsp;</span> Inativo / Suspenso
         </div>
     </div>
 
-    <a href="{{ route('fornecedores.create') }}" class="btn btn-primary mb-3">Adicionar Fornecedor</a>
+    <form action="{{ route('fornecedores.index') }}" method="GET" class="mb-3">
+        <div class="input-group">
+            <input type="text" name="filter_q" class="form-control" placeholder="Buscar por Razão Social, Nome Fantasia ou CNPJ..." value="{{ $filters['filter_q'] ?? '' }}">
+            <button class="btn btn-outline-secondary" type="submit">Buscar</button>
+            <a href="{{ route('fornecedores.index') }}" class="btn btn-outline-danger">Limpar</a>
+        </div>
+    </form>
 
-    <table class="table table-striped table-hover">
-        <thead class="table-dark">
-            <tr>
-                @php
-                    $linkParams = array_merge($filters, ['per_page' => $perPage]);
-                    $direction = ($sortBy == 'id' && $sortDirection == 'asc') ? 'desc' : 'asc';
-                @endphp
-                <th><a href="{{ route('fornecedores.index', array_merge($linkParams, ['sort_by' => 'id', 'sort_direction' => $direction])) }}">ID {!! $sortBy == 'id' ? ($sortDirection == 'asc' ? '&#9650;' : '&#9660;') : '' !!}</a></th>
-
-                @php $direction = ($sortBy == 'nome' && $sortDirection == 'asc') ? 'desc' : 'asc'; @endphp
-                <th><a href="{{ route('fornecedores.index', array_merge($linkParams, ['sort_by' => 'nome', 'sort_direction' => $direction])) }}">Nome {!! $sortBy == 'nome' ? ($sortDirection == 'asc' ? '&#9650;' : '&#9660;') : '' !!}</a></th>
-                <th>CNPJ</th>
-                <th>Email</th>
-                <th>Status</th>
-                <th>Ações</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse ($fornecedores as $fornecedor)
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+            <thead class="table-dark">
                 <tr>
-                    <td>{{ $fornecedor->id }}</td>
-                    <td>{{ $fornecedor->nome }}</td>
-                    <td>{{ $fornecedor->cnpj }}</td>
-                    <td>{{ $fornecedor->email ?? 'N/A' }}</td>
-                    <td>
-                        @if ($fornecedor->trashed())
-                            <span class="badge bg-warning text-dark">Inativo</span>
-                        @else
-                            <span class="badge bg-success">Ativo</span>
-                        @endif
-                    </td>
-                    <td class="d-flex">
-                        @if ($fornecedor->trashed())
-                            {{-- Formulário para a ação de restaurar --}}
-                            <form action="{{ route('fornecedores.restore', $fornecedor->id) }}" method="POST" class="d-inline">
-                                @csrf
-                                @method('PATCH')
-                                <button type="submit" class="btn btn-sm btn-info">Restaurar</button>
-                            </form>
-                        @else
-                            <a href="{{ route('fornecedores.edit', $fornecedor) }}" class="btn btn-sm btn-secondary me-2">Editar</a>
-                            <form action="{{ route('fornecedores.destroy', $fornecedor) }}" method="POST" onsubmit="return confirm('Deseja desativar este fornecedor?');" class="d-inline">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-warning">Desativar</button>
-                            </form>
-                        @endif
-                    </td>
+                    @php $linkParamsRazaoSocial = array_merge($filters, ['sort_direction' => $sortBy == 'razao_social' && $sortDirection == 'asc' ? 'desc' : 'asc']); @endphp
+                    <th scope="col">
+                        <a href="{{ route('fornecedores.index', array_merge($linkParamsRazaoSocial, ['sort_by' => 'razao_social'])) }}">
+                            Razão Social / CNPJ
+                            @if($sortBy == 'razao_social') <i class="bi bi-arrow-{{ $sortDirection == 'asc' ? 'up' : 'down' }}"></i> @endif
+                        </a>
+                    </th>
+                    
+                    @php $linkParamsNomeFantasia = array_merge($filters, ['sort_direction' => $sortBy == 'nome_fantasia' && $sortDirection == 'asc' ? 'desc' : 'asc']); @endphp
+                    <th scope="col">
+                        <a href="{{ route('fornecedores.index', array_merge($linkParamsNomeFantasia, ['sort_by' => 'nome_fantasia'])) }}">
+                            Nome Fantasia
+                            @if($sortBy == 'nome_fantasia') <i class="bi bi-arrow-{{ $sortDirection == 'asc' ? 'up' : 'down' }}"></i> @endif
+                        </a>
+                    </th>
+                    
+                    <th scope="col">Telefones</th>
+                    <th scope="col">E-mails</th>
+                    <th scope="col" class="text-center">Ações</th>
                 </tr>
-            @empty
-                <tr>
-                    <td colspan="6" class="text-center">Nenhum fornecedor cadastrado.</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @forelse ($fornecedores as $fornecedor)
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                @if ($fornecedor->status === 'ativo')
+                                    <span class="badge rounded-pill bg-success me-2" title="Ativo">&nbsp;</span>
+                                @elseif ($fornecedor->status === 'em_analise')
+                                    <span class="badge rounded-pill bg-warning me-2" title="Em Análise">&nbsp;</span>
+                                @else
+                                    <span class="badge rounded-pill bg-danger me-2" title="{{ ucfirst($fornecedor->status) }}">&nbsp;</span>
+                                @endif
+                                <div>
+                                    <strong>{{ $fornecedor->razao_social }}</strong>
+                                    <br>
+                                    <small class="text-muted">CNPJ: {{ $fornecedor->cnpj }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ $fornecedor->nome_fantasia ?: '--' }}</td>
+                        <td>
+                            {!! implode('<br>', array_filter([$fornecedor->telefone, $fornecedor->telefone2])) ?: '--' !!}
+                        </td>
+                        <td>
+                            {!! implode('<br>', array_filter([$fornecedor->email, $fornecedor->email2])) ?: '--' !!}
+                        </td>
+                        <td class="text-center">
+                            @if ($fornecedor->trashed())
+                                <form action="{{ route('fornecedores.restore', $fornecedor) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" class="btn btn-sm btn-success" title="Restaurar"><i class="bi bi-arrow-counterclockwise"></i></button>
+                                </form>
+                            @else
+                                <a href="{{ route('fornecedores.edit', $fornecedor) }}" class="btn btn-sm btn-warning" title="Editar"><i class="bi bi-pencil-square"></i></a>
+                                <form action="{{ route('fornecedores.destroy', $fornecedor) }}" method="POST" class="d-inline" onsubmit="return confirm('Tem certeza que deseja desativar este fornecedor?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-danger" title="Desativar"><i class="bi bi-trash"></i></button>
+                                </form>
+                            @endif
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="5" class="text-center">Nenhum fornecedor encontrado.</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
 
-    <!-- RODAPÉ: LINKS DE PAGINAÇÃO -->
     <div class="d-flex justify-content-center">
-        {!! $fornecedores->appends(request()->query())->links() !!}
+        {{ $fornecedores->appends(request()->query())->links() }}
     </div>
 @endsection
