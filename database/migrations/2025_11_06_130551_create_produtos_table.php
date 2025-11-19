@@ -13,21 +13,30 @@ return new class extends Migration
     {
         Schema::create('produtos', function (Blueprint $table) {
             $table->id();
+
+            // --- Identificação do Produto ---
             $table->string('nome');
+            $table->string('sku')->nullable()->unique()->comment('Stock Keeping Unit');
+            $table->string('barcode')->nullable()->unique()->comment('Código de Barras (EAN)');
+
+            // --- Descrição e Categoria ---
             $table->text('descricao')->nullable();
-            $table->decimal('preco_venda', 10, 2); // Preço com 10 dígitos no total e 2 casas decimais
+            $table->string('unidade_medida', 10)->default('un');
 
-            // --- NOSSAS MELHORIAS DE ESTOQUE ---
-            $table->integer('quantidade_estoque')->default(0);
-            $table->integer('estoque_minimo')->default(0)->nullable();
+            // --- Detalhes Financeiros ---
+            $table->decimal('preco_custo', 10, 2)->default(0.00);
+            $table->decimal('preco_venda', 10, 2)->default(0.00);
 
-            // --- CHAVE ESTRANGEIRA ---
-            // Isso cria a coluna 'fornecedor_id' e a relação com a tabela 'fornecedores'
-            $table->foreignId('fornecedor_id')->constrained('fornecedores');
+            // --- Controle de Estoque (com precisão decimal) ---
+            $table->decimal('quantidade_estoque', 10, 3)->default(0.000); // 3 casas para precisão em kg, etc.
+            $table->decimal('estoque_minimo', 10, 3)->default(0.000);
 
+            // --- Status e Relacionamentos ---
+            $table->enum('status', ['ativo', 'inativo', 'sem estoque', 'em pedido'])->default('ativo');
+            $table->foreignId('fornecedor_id')->constrained('fornecedores')->onDelete('cascade');
+            
             $table->timestamps();
-
-            $table->softDeletes(); // Adiciona a coluna 'deleted_at' para soft deletes
+            $table->softDeletes();
         });
     }
 

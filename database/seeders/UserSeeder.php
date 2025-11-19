@@ -5,6 +5,7 @@ namespace Database\Seeders;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\User;
+use App\Models\Fornecedor;
 use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
@@ -14,6 +15,8 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
+        $fornecedor = Fornecedor::first();
+
         // Senha padrão para todos os usuários de teste
         $defaultPassword = Hash::make('123!@#asdASD'); // Use uma senha segura!
 
@@ -45,11 +48,14 @@ class UserSeeder extends Seeder
             'role' => 'cliente',
         ]);
 
-        User::create([
-            'name' => 'Usuário Fornecedor',
-            'email' => 'fornecedor@app.com',
-            'password' => $defaultPassword,
-            'role' => 'fornecedor',
-        ]);
+        if ($fornecedor) {
+            User::create([
+                'name' => 'Usuário Fornecedor',
+                'email' => 'fornecedor@app.com',
+                'password' => $defaultPassword,
+                'role' => 'fornecedor',
+                'fornecedor_id' => $fornecedor->id,
+            ]);
+        }
     }
 }

@@ -5,7 +5,9 @@
 @section('content')
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1>Fornecedores</h1>
-        <a href="{{ route('fornecedores.create') }}" class="btn btn-primary">Cadastrar Novo</a>
+        @can('create', App\Models\Fornecedor::class)
+            <a href="{{ route('fornecedores.create') }}" class="btn btn-primary">Cadastrar Novo</a>
+        @endcan
     </div>
     <hr>
 
@@ -83,18 +85,24 @@
                         </td>
                         <td class="text-center">
                             @if ($fornecedor->trashed())
+                                @can('restore', $fornecedor)
                                 <form action="{{ route('fornecedores.restore', $fornecedor) }}" method="POST" class="d-inline">
                                     @csrf
                                     @method('PATCH')
                                     <button type="submit" class="btn btn-sm btn-success" title="Restaurar"><i class="bi bi-arrow-counterclockwise"></i></button>
                                 </form>
+                                @endcan
                             @else
+                                @can('update', $fornecedor)
                                 <a href="{{ route('fornecedores.edit', $fornecedor) }}" class="btn btn-sm btn-warning" title="Editar"><i class="bi bi-pencil-square"></i></a>
+                                @endcan
+                                @can('delete', $fornecedor)
                                 <form action="{{ route('fornecedores.destroy', $fornecedor) }}" method="POST" class="d-inline" onsubmit="return confirm('Tem certeza que deseja desativar este fornecedor?');">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-danger" title="Desativar"><i class="bi bi-trash"></i></button>
                                 </form>
+                                @endcan
                             @endif
                         </td>
                     </tr>

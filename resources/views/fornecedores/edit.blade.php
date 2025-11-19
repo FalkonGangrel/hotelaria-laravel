@@ -18,6 +18,10 @@
             <p>Precisa atualizar os dados? Digite um CNPJ diferente para buscar novas informações.</p>
         </div>
 
+        @php
+            // Para não repetir a verificação, definimos uma variável.
+            $isFornecedor = auth()->user()->role === 'fornecedor';
+        @endphp
         {{-- Seção Dados da Empresa --}}
         <div class="card mb-3">
             <div class="card-header">Dados da Empresa</div>
@@ -26,9 +30,13 @@
                     <div class="col-md-4 mb-3">
                         <label for="cnpj" class="form-label">CNPJ <span class="text-danger">*</span></label>
                         {{-- MUDANÇA 3: Preenchimento dos campos com old() e o valor do banco --}}
-                        <input type="text" class="form-control @error('cnpj') is-invalid @enderror" id="cnpj" name="cnpj" value="{{ old('cnpj', $fornecedor->cnpj) }}" required>
-                        <small class="form-text text-muted">Digite apenas os números.</small>
-                        @error('cnpj')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        @if($isFornecedor)
+                            <input type="text" class="form-control" id="cnpj" value="{{ old('cnpj', $fornecedor->cnpj) }}" readonly>
+                        @else
+                            <input type="text" class="form-control @error('cnpj') is-invalid @enderror" id="cnpj" name="cnpj" value="{{ old('cnpj', $fornecedor->cnpj) }}" required>
+                            <small class="form-text text-muted">Digite apenas os números.</small>
+                            @error('cnpj')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        @endif
                     </div>
                     <div class="col-md-8 mb-3">
                         <label for="razao_social" class="form-label">Razão Social <span class="text-danger">*</span></label>
@@ -45,19 +53,27 @@
                     </div>
                     <div class="col-md-4 mb-3">
                         <label for="ie" class="form-label">Inscrição Estadual</label>
-                        <input type="text" class="form-control @error('ie') is-invalid @enderror" id="ie" name="ie" value="{{ old('ie', $fornecedor->ie) }}">
-                        @error('ie')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        @if($isFornecedor)
+                            <input type="text" class="form-control" value="{{ old('ie', $fornecedor->ie) }}">
+                        @else
+                            <input type="text" class="form-control @error('ie') is-invalid @enderror" id="ie" name="ie" value="{{ old('ie', $fornecedor->ie) }}">
+                            @error('ie')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        @endif
                     </div>
                     <div class="col-md-4 mb-3">
                         <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
+                    @if($isFornecedor)
+                        <input type="text" class="form-control" value="{{ ucfirst($fornecedor->status) }}" readonly>
+                    @else
+                        {{-- Admin/Master veem o select normal --}}
                         <select class="form-select @error('status') is-invalid @enderror" id="status" name="status" required>
-                            {{-- Lógica especial para o select --}}
                             <option value="ativo" {{ old('status', $fornecedor->status) == 'ativo' ? 'selected' : '' }}>Ativo</option>
                             <option value="inativo" {{ old('status', $fornecedor->status) == 'inativo' ? 'selected' : '' }}>Inativo</option>
                             <option value="em_analise" {{ old('status', $fornecedor->status) == 'em_analise' ? 'selected' : '' }}>Em Análise</option>
                             <option value="suspenso" {{ old('status', $fornecedor->status) == 'suspenso' ? 'selected' : '' }}>Suspenso</option>
                         </select>
                         @error('status')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    @endif
                     </div>
                 </div>
             </div>
@@ -140,6 +156,7 @@
         </div>
 
         {{-- Seção Observações --}}
+        @if(!$isFornecedor)
         <div class="card mb-3">
             <div class="card-header">Informações Adicionais</div>
             <div class="card-body">
@@ -150,6 +167,7 @@
                 </div>
             </div>
         </div>
+        @endif
 
 
         <hr>

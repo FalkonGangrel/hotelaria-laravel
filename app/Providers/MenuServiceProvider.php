@@ -34,16 +34,22 @@ class MenuServiceProvider extends ServiceProvider
                     'roles' => ['master','admin', 'user'], // Visível para master, admin e user
                 ],
                 [
-                    'title' => 'Produtos',
-                    'route' => 'produtos.index',
-                    'icon'  => 'bi-box-seam-fill',
-                    'roles' => ['master','admin'], // Visível apenas para master e admin
+                    'title' => 'Usuários',
+                    'route' => 'users.index',
+                    'icon'  => 'bi-truck-front-fill',
+                    'roles' => ['master','admin','fornecedor','cliente'], // Visível apenas para master e admin
                 ],
                 [
                     'title' => 'Fornecedores',
                     'route' => 'fornecedores.index',
                     'icon'  => 'bi-truck-front-fill',
-                    'roles' => ['master','admin'], // Visível apenas para master e admin
+                    'roles' => ['master','admin','fornecedor'], // Visível apenas para master e admin
+                ],
+                [
+                    'title' => 'Produtos',
+                    'route' => 'produtos.index',
+                    'icon'  => 'bi-box-seam-fill',
+                    'roles' => ['master','admin','fornecedor'], // Visível apenas para master e admin
                 ],
                 // Adicione aqui futuros itens de menu...
             ];
