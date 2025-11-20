@@ -25,10 +25,14 @@
     </div>
 
     <form action="{{ route('fornecedores.index') }}" method="GET" class="mb-3">
-        <div class="input-group">
-            <input type="text" name="filter_q" class="form-control" placeholder="Buscar por Razão Social, Nome Fantasia ou CNPJ..." value="{{ $filters['filter_q'] ?? '' }}">
-            <button class="btn btn-outline-secondary" type="submit">Buscar</button>
-            <a href="{{ route('fornecedores.index') }}" class="btn btn-outline-danger">Limpar</a>
+        <div class="row g-2">
+            <div class="col-md-10">
+                <input type="text" name="filter_q" class="form-control" placeholder="Buscar por Razão Social, Nome Fantasia ou CNPJ..." value="{{ $filters['filter_q'] ?? '' }}">
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button class="btn btn-outline-secondary flex-grow-1" type="submit">Buscar</button>
+                <a href="{{ route('fornecedores.index') }}" class="btn btn-outline-danger"><i class="bi bi-x-lg"></i></a>
+            </div>
         </div>
     </form>
 
