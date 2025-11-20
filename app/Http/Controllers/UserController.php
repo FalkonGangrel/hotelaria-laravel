@@ -14,26 +14,34 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
+        // A Policy já deve estar configurada para autorizar 'viewAny'
         $this->authorize('viewAny', User::class);
-        $sortBy = $request->query('sort_by', 'id'); // Padrão é ordenar por ID
-        $sortDirection = $request->query('sort_direction', 'asc'); // Padrão é ascendente
-        $perPage = $request->query('per_page', 10); // Padrão é 10 itens por página
-        $filters = $request->only(['filter_nome']); // Pega apenas os filtros relevantes
 
-        $users = User::withTrashed();
+        // --- PREPARAÇÃO ---
+        $filters = $request->only(['filter_q']);
+        $sortBy = $request->query('sort_by', 'name');
+        $sortDirection = $request->query('sort_direction', 'asc');
+        $perPage = $request->query('per_page', 10);
+        
+        // --- CONSTRUÇÃO DA QUERY ---
+        $query = User::query()->withTrashed();
 
-        if (!empty($filters['filter_nome'])) {
-            $users->where('name', 'like', '%' . $filters['filter_nome'] . '%');
-        }
-        $users->orderBy($sortBy, $sortDirection);
-        $users = $users->paginate($perPage);
-        return view('users.index', [
-            'users' => $users,
-            'filters' => $filters,
-            'sortBy' => $sortBy,
-            'sortDirection' => $sortDirection,
-            'perPage' => $perPage,
-        ]);
+        // --- APLICAÇÃO DO FILTRO ---
+        $query->when($filters['filter_q'] ?? null, function ($q, $search) {
+            $q->where(function ($subquery) use ($search) {
+                $subquery->where('name', 'like', '%' . $search . '%')
+                        ->orWhere('email', 'like', '%' . $search . '%');
+            });
+        });
+
+        // --- ORDENAÇÃO ---
+        $query->orderBy($sortBy, $sortDirection);
+        
+        // --- PAGINAÇÃO ---
+        $users = $query->paginate($perPage);
+
+        // Passamos todas as variáveis para a view para que os filtros e ordenação persistam na paginação
+        return view('users.index', compact('users', 'filters', 'sortBy', 'sortDirection', 'perPage'));
     }
 
     public function create()

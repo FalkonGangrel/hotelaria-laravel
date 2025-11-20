@@ -6,7 +6,7 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1>Fornecedores</h1>
         @can('create', App\Models\Fornecedor::class)
-            <a href="{{ route('fornecedores.create') }}" class="btn btn-primary">Cadastrar Novo</a>
+            <a href="{{ route('fornecedores.create') }}" class="btn btn-primary">Novo Fornecedor</a>
         @endcan
     </div>
     <hr>
