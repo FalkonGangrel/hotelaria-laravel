@@ -1,108 +1,154 @@
-{{-- 1. Diz ao Blade que esta view estende o nosso layout mestre --}}
 @extends('layouts.app')
 
-{{-- 2. Define o conteúdo da seção 'title' que está no layout mestre --}}
-@section('title', 'Lista de Produtos')
+@section('title', 'Produtos')
 
-{{-- 3. Todo o conteúdo específico da página vai dentro da seção 'content' --}}
 @section('content')
-    <h1>Lista de Produtos</h1>
+    {{-- Bloco do Cabeçalho --}}
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1>Produtos</h1>
+        @can('create', App\Models\Produto::class)
+            <a href="{{ route('produtos.create') }}" class="btn btn-primary">Novo Produto</a>
+        @endcan
+    </div>
     <hr>
 
-    <!-- SEÇÃO DE FILTROS E CONTROLES -->
-    <div class="card bg-light mb-3">
-        {{-- O código dos filtros permanece o mesmo --}}
-        <div class="card-body">
-            <form method="GET" action="{{ route('produtos.index') }}" class="row g-3 align-items-center">
-                <div class="col-md-4">
-                    <label for="filter_nome" class="form-label">Filtrar por Nome:</label>
-                    <input type="text" name="filter_nome" id="filter_nome" class="form-control" value="{{ $filters['filter_nome'] ?? '' }}">
-                </div>
-                <div class="col-md-4">
-                    <label for="filter_fornecedor" class="form-label">Filtrar por Fornecedor:</label>
-                    <input type="text" name="filter_fornecedor" id="filter_fornecedor" class="form-control" value="{{ $filters['filter_fornecedor'] ?? '' }}">
-                </div>
-                <div class="col-md-2">
-                    <label for="per_page" class="form-label">Itens por página:</label>
-                    <select name="per_page" id="per_page" class="form-select">
-                        <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10</option>
-                        <option value="25" {{ $perPage == 25 ? 'selected' : '' }}>25</option>
-                        <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50</option>
-                        <option value="100" {{ $perPage == 100 ? 'selected' : '' }}>100</option>
-                    </select>
-                </div>
-                <div class="col-md-2 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary me-2">Filtrar</button>
-                    <a href="{{ route('produtos.index') }}" class="btn btn-secondary">Limpar</a>
-                </div>
-            </form>
+    {{-- Legenda de Status --}}
+    <div class="d-flex align-items-center flex-wrap gap-3 mb-3">
+        <strong>Legenda:</strong>
+        <div class="d-flex align-items-center">
+            <span class="badge rounded-pill bg-success me-1">&nbsp;</span> Ativo
+        </div>
+        <div class="d-flex align-items-center">
+            <span class="badge rounded-pill bg-primary me-1">&nbsp;</span> Em Pedido
+        </div>
+        <div class="d-flex align-items-center">
+            <span class="badge rounded-pill bg-warning me-1">&nbsp;</span> Sem Estoque
+        </div>
+        <div class="d-flex align-items-center">
+            <span class="badge rounded-pill bg-danger me-1">&nbsp;</span> Inativo / Desativado
         </div>
     </div>
 
-    <a href="{{ route('produtos.create') }}" class="btn btn-primary mb-3">Adicionar Produto</a>
+    {{-- Formulário de Filtros Avançados --}}
+    <form action="{{ route('produtos.index') }}" method="GET" class="mb-3">
+        <div class="row g-2">
+            <div class="col-md-4">
+                <input type="text" name="filter_produto" class="form-control" placeholder="Buscar por Nome, SKU ou Código..." value="{{ $filters['filter_produto'] ?? '' }}">
+            </div>
+            <div class="col-md-3">
+                <input type="text" name="filter_fornecedor" class="form-control" placeholder="Buscar por Fornecedor ou CNPJ..." value="{{ $filters['filter_fornecedor'] ?? '' }}">
+            </div>
+            <div class="col-md-3">
+                <input type="text" name="filter_categoria" class="form-control" placeholder="Buscar por Categoria..." value="{{ $filters['filter_categoria'] ?? '' }}">
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-outline-secondary flex-grow-1">Buscar</button>
+                <a href="{{ route('produtos.index') }}" class="btn btn-outline-danger" title="Limpar Filtros"><i class="bi bi-x-lg"></i></a>
+            </div>
+        </div>
+    </form>
 
-    <table class="table table-striped table-hover">
-        {{-- A tabela e sua lógica permanecem as mesmas --}}
-        <thead class="table-dark">
-            <tr>
-                @php
-                    $linkParams = array_merge($filters, ['per_page' => $perPage]);
-                    $direction = ($sortBy == 'id' && $sortDirection == 'asc') ? 'desc' : 'asc';
-                @endphp
-                <th><a href="{{ route('produtos.index', array_merge($linkParams, ['sort_by' => 'id', 'sort_direction' => $direction])) }}">ID {!! $sortBy == 'id' ? ($sortDirection == 'asc' ? '&#9650;' : '&#9660;') : '' !!}</a></th>
-                
-                @php $direction = ($sortBy == 'nome' && $sortDirection == 'asc') ? 'desc' : 'asc'; @endphp
-                <th><a href="{{ route('produtos.index', array_merge($linkParams, ['sort_by' => 'nome', 'sort_direction' => $direction])) }}">Nome {!! $sortBy == 'nome' ? ($sortDirection == 'asc' ? '&#9650;' : '&#9660;') : '' !!}</a></th>
-
-                <th>Preço Venda</th>
-                <th>Estoque</th>
-                <th>Fornecedor</th>
-                <th>Status</th>
-                <th style="width: 180px;">Ações</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse ($produtos as $produto)
+    {{-- Tabela Responsiva --}}
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+            <thead class="table-dark">
                 <tr>
-                    <td>{{ $produto->id }}</td>
-                    <td>{{ $produto->nome }}</td>
-                    <td>R$ {{ number_format($produto->preco_venda, 2, ',', '.') }}</td>
-                    <td>{{ $produto->quantidade_estoque }}</td>
-                    <td>{{ $produto->fornecedor->nome ?? 'N/A' }}</td>
-                    <td>
-                        @if ($produto->trashed())
-                            <span class="badge bg-warning text-dark">Inativo</span>
-                        @else
-                            <span class="badge bg-success">Ativo</span>
-                        @endif
-                    </td>
-                    <td class="d-flex">
-                        @if ($produto->trashed())
-                            <form action="{{ route('produtos.restore', $produto->id) }}" method="POST" class="d-inline">
-                                @csrf
-                                @method('PATCH')
-                                <button type="submit" class="btn btn-sm btn-info">Restaurar</button>
-                            </form>
-                        @else
-                            <a href="{{ route('produtos.edit', $produto) }}" class="btn btn-sm btn-secondary me-2">Editar</a>
-                            <form action="{{ route('produtos.destroy', $produto) }}" method="POST" onsubmit="return confirm('Deseja desativar este produto?');" class="d-inline">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-warning">Desativar</button>
-                            </form>
-                        @endif
-                    </td>
+                    @php 
+                        $linkParamsNome = array_merge($filters, ['sort_direction' => $sortBy == 'nome' && $sortDirection == 'asc' ? 'desc' : 'asc', 'sort_by' => 'nome']); 
+                        $linkParamsFornecedor = array_merge($filters, ['sort_direction' => $sortBy == 'fornecedor' && $sortDirection == 'asc' ? 'desc' : 'asc', 'sort_by' => 'fornecedor']);
+                        $linkParamsCategoria = array_merge($filters, ['sort_direction' => $sortBy == 'categoria' && $sortDirection == 'asc' ? 'desc' : 'asc', 'sort_by' => 'categoria']);
+                        $linkParamsPreco = array_merge($filters, ['sort_direction' => $sortBy == 'preco_venda' && $sortDirection == 'asc' ? 'desc' : 'asc', 'sort_by' => 'preco_venda']);
+                    @endphp
+                    <th scope="col">
+                        <a href="{{ route('produtos.index', $linkParamsNome) }}">
+                            Produto
+                            @if($sortBy == 'nome') <i class="bi bi-arrow-{{ $sortDirection == 'asc' ? 'up' : 'down' }}"></i> @endif
+                        </a>
+                    </th>
+                    <th scope="col">
+                        <a href="{{ route('produtos.index', $linkParamsFornecedor) }}">
+                            Fornecedor
+                            @if($sortBy == 'fornecedor') <i class="bi bi-arrow-{{ $sortDirection == 'asc' ? 'up' : 'down' }}"></i> @endif
+                        </a>
+                    </th>
+                    <th scope="col">
+                        <a href="{{ route('produtos.index', $linkParamsCategoria) }}">
+                            Categorias
+                            @if($sortBy == 'categoria') <i class="bi bi-arrow-{{ $sortDirection == 'asc' ? 'up' : 'down' }}"></i> @endif
+                        </a>
+                    </th>
+                    <th scope="col">
+                        <a href="{{ route('produtos.index', $linkParamsPreco) }}">
+                            Preço Venda
+                            @if($sortBy == 'preco_venda') <i class="bi bi-arrow-{{ $sortDirection == 'asc' ? 'up' : 'down' }}"></i> @endif
+                        </a>
+                    </th>
+                    <th scope="col" class="text-center">Ações</th>
                 </tr>
-            @empty
-                <tr>
-                    <td colspan="7" class="text-center">Nenhum produto encontrado.</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @forelse ($produtos as $produto)
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                {{-- Indicador de Status --}}
+                                @if($produto->trashed())
+                                    <span class="badge rounded-pill bg-danger me-2" title="Desativado">&nbsp;</span>
+                                @elseif($produto->status === 'ativo')
+                                    <span class="badge rounded-pill bg-success me-2" title="Ativo">&nbsp;</span>
+                                @elseif($produto->status === 'em_pedido')
+                                    <span class="badge rounded-pill bg-primary me-2" title="Em Pedido">&nbsp;</span>
+                                @elseif($produto->status === 'sem_estoque')
+                                    <span class="badge rounded-pill bg-warning me-2" title="Sem Estoque">&nbsp;</span>
+                                @else
+                                    <span class="badge rounded-pill bg-danger me-2" title="Inativo">&nbsp;</span>
+                                @endif
 
-    <!-- RODAPÉ: LINKS DE PAGINAÇÃO -->
+                                {{-- Informações do Produto --}}
+                                <div>
+                                    <strong>{{ $produto->nome }}</strong>
+                                    @if($produto->sku)<br><small class="text-muted">SKU: {{ $produto->sku }}</small>@endif
+                                    @if($produto->barcode)<br><small class="text-muted"><i class="bi bi-upc-scan"></i> {{ $produto->barcode }}</small>@endif
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ $produto->nome_fornecedor ?? 'N/A' }}</td>
+                        <td><small>{{ $produto->nomes_categorias ?? 'Sem categoria' }}</small></td>
+                        <td>R$ {{ number_format($produto->preco_venda, 2, ',', '.') }}</td>
+                        <td class="text-center">
+                            @if ($produto->trashed())
+                                @can('restore', $produto)
+                                <form action="{{ route('produtos.restore', $produto) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" class="btn btn-sm btn-success" title="Restaurar"><i class="bi bi-arrow-counterclockwise"></i></button>
+                                </form>
+                                @endcan
+                            @else
+                                @can('update', $produto)
+                                <a href="{{ route('produtos.edit', $produto) }}" class="btn btn-sm btn-warning" title="Editar"><i class="bi bi-pencil-square"></i></a>
+                                @endcan
+                                @can('delete', $produto)
+                                <form action="{{ route('produtos.destroy', $produto) }}" method="POST" class="d-inline" onsubmit="return confirm('Tem certeza que deseja desativar este produto?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-danger" title="Desativar"><i class="bi bi-trash"></i></button>
+                                </form>
+                                @endcan
+                            @endif
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="6" class="text-center">Nenhum produto encontrado.</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
+    {{-- Paginação --}}
     <div class="d-flex justify-content-center">
-        {!! $produtos->appends(request()->query())->links() !!}
+        {{ $produtos->appends(request()->query())->links() }}
     </div>
 @endsection

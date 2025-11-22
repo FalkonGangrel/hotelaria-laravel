@@ -2,11 +2,12 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\ProdutoScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\SoftDeletes; // Importar SoftDeletes
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Produto extends Model
 {
@@ -30,6 +31,16 @@ class Produto extends Model
         'status',
         'fornecedor_id',
     ];
+
+    /**
+     * The "booted" method of the model.
+     *
+     * @return void
+     */
+    protected static function booted(): void
+    {
+        static::addGlobalScope(new ProdutoScope);
+    }
 
     /**
      * Define o relacionamento: Um Produto PERTENCE A UM Fornecedor.

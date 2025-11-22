@@ -36,7 +36,7 @@ class MenuServiceProvider extends ServiceProvider
                 [
                     'title' => 'Usuários',
                     'route' => 'users.index',
-                    'icon'  => 'bi-truck-front-fill',
+                    'icon'  => 'bi-person',
                     'roles' => ['master','admin','fornecedor','cliente'], // Visível apenas para master e admin
                 ],
                 [

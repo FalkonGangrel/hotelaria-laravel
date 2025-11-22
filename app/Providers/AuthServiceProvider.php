@@ -7,8 +7,10 @@ use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvid
 
 use App\Models\User;
 use App\Models\Fornecedor;
+use App\Models\Produto;
 use App\Policies\UserPolicy;
 use App\Policies\FornecedorPolicy;
+use App\Policies\ProdutoPolicy;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -21,6 +23,7 @@ class AuthServiceProvider extends ServiceProvider
         //
         User::class => UserPolicy::class,
         Fornecedor::class => FornecedorPolicy::class,
+        Produto::class => ProdutoPolicy::class,
     ];
 
     /**
